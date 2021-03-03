@@ -1,0 +1,5 @@
+{
+    "port": 5000,
+    "jwtSecret": "alexus",
+    "mongoUri": "mongodb+srv://alexus:asd123@cluster0.omygq.mongodb.net/app?retryWrites=true&w=majority"
+}
