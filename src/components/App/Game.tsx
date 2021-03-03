@@ -4,16 +4,24 @@ import NumberDisplay from '../NumberDisplay/NumberDisplay';
 import {generateCells, openMultipleCells} from '../../utils/index'
 import Button from '../Button/Button';
 import {Cell, CellState, CellValue, Face} from '../../types/index';
-import { MAX_COLS, MAX_ROWS } from '../../constants';
 
 import './App.scss';
 
-const Game: React.FC = () => {
-    const [cells, setCells] = useState<Cell[][]>(generateCells());
+interface GameConfigProps {
+    config: {
+        MAX_ROWS: number;
+        MAX_COLS: number;
+        NO_OF_BOMBS: number;
+    }
+}
+
+const Game: React.FC<GameConfigProps> = ({config}) => {
+    const {MAX_COLS, MAX_ROWS, NO_OF_BOMBS} = config;
+    const [cells, setCells] = useState<Cell[][]>(generateCells(config));
     const [face, setFace] = useState<Face>(Face.smile);
     const [time, setTime] = useState<number>(0);
     const [live, setLive] = useState<boolean>(false);
-    const [bombCounter, setBombCounter] = useState<number>(10);
+    const [bombCounter, setBombCounter] = useState<number>(NO_OF_BOMBS);
     const [hasLost, setHasLost] = useState<boolean>(false);
     const [hasWon, setHasWon] = useState<boolean>(false);
 
@@ -62,13 +70,15 @@ const Game: React.FC = () => {
     }, [hasWon]);
 
     const handleCellClick = (rowParam: number, colParam: number) => (): void => {
+        if (hasLost) return;
+        
         let newCells = cells.slice();
 
         //start the game
         if (!live) {
             let isABomb = newCells[rowParam][colParam].value === CellValue.bomb;
             while (isABomb) {
-                newCells = generateCells();
+                newCells = generateCells(config);
                 if (newCells[rowParam][colParam].value !== CellValue.bomb) {
                     isABomb = false;
                     break;
@@ -91,7 +101,7 @@ const Game: React.FC = () => {
             setCells(newCells);
             return;
         } else if (currentCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam, colParam);
+            newCells = openMultipleCells(newCells, rowParam, colParam, MAX_COLS, MAX_ROWS);
         } else {
             newCells[rowParam][colParam].state = CellState.visible;
         }
@@ -151,9 +161,10 @@ const Game: React.FC = () => {
     const handleFaceClick = (): void => {
         setLive(false);
         setTime(0);
-        setCells(generateCells());
+        setCells(generateCells(config));
         setHasLost(false);
         setHasWon(false);
+        setBombCounter(NO_OF_BOMBS);
     }
 
     const renderCells = (): React.ReactNode => {
@@ -196,7 +207,14 @@ const Game: React.FC = () => {
                 </div>
                 <NumberDisplay value={time} />
             </div>
-            <div className="Body">{renderCells()}</div>
+            <div 
+                className="Body"
+                style={{
+                    gridTemplateColumns: `repeat(${MAX_COLS}, 1fr)`,
+                    gridTemplateRows: `repeat(${MAX_ROWS}, 1fr)`
+                    }}>
+                {renderCells()}
+            </div>
         </div>
     )
 };
