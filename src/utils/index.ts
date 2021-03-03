@@ -1,7 +1,6 @@
-import {MAX_COLS, MAX_ROWS, NO_OF_BOMBS} from '../constants/index';
 import {Cell, CellValue, CellState} from '../types/index';
 
-const grabAllAdjacentCells = (cells: Cell[][], rowParam: number, colParam: number): {
+const grabAllAdjacentCells = (cells: Cell[][], rowParam: number, colParam: number, MAX_COLS: number, MAX_ROWS: number): {
     topLeftCell: Cell | null,
     topCell: Cell | null,
     topRightCell: Cell | null,
@@ -32,7 +31,13 @@ const grabAllAdjacentCells = (cells: Cell[][], rowParam: number, colParam: numbe
     }
 }
 
-export const generateCells = (): Cell[][] => {
+type configProp = {
+    MAX_ROWS: number;
+    MAX_COLS: number;
+    NO_OF_BOMBS: number;
+}
+
+export const generateCells = ({MAX_COLS, MAX_ROWS, NO_OF_BOMBS}: configProp): Cell[][] => {
     let cells: Cell[][] = [];
     for (let row = 0; row < MAX_ROWS; row++) {
         cells.push([]);
@@ -77,7 +82,7 @@ export const generateCells = (): Cell[][] => {
             }
 
             let numberOfBombs = 0;
-            const {topLeftCell, topCell, topRightCell, leftCell, rightCell, bottomLeftCell, bottomCell, bottomRightCell} = grabAllAdjacentCells(cells, rowIndex, colIndex);
+            const {topLeftCell, topCell, topRightCell, leftCell, rightCell, bottomLeftCell, bottomCell, bottomRightCell} = grabAllAdjacentCells(cells, rowIndex, colIndex, MAX_COLS, MAX_ROWS);
 
             if (topLeftCell?.value === CellValue.bomb) {
                 numberOfBombs++;
@@ -116,7 +121,7 @@ export const generateCells = (): Cell[][] => {
     return cells;
 }
 
-export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: number): Cell[][] => {
+export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: number, MAX_COLS: number, MAX_ROWS: number): Cell[][] => {
     const currentCell = cells[rowParam][colParam];
     
     if (currentCell.state === CellState.visible || currentCell.state === CellState.flagged) {
@@ -127,11 +132,11 @@ export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: n
 
     newCells[rowParam][colParam].state = CellState.visible;
     
-    const {topLeftCell, topCell, topRightCell, leftCell, rightCell, bottomLeftCell, bottomCell, bottomRightCell} = grabAllAdjacentCells(cells, rowParam, colParam);
+    const {topLeftCell, topCell, topRightCell, leftCell, rightCell, bottomLeftCell, bottomCell, bottomRightCell} = grabAllAdjacentCells(cells, rowParam, colParam, MAX_COLS, MAX_ROWS);
 
     if (topLeftCell?.state === CellState.open && topLeftCell.value !== CellValue.bomb) {
         if (topLeftCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam - 1, colParam - 1);
+            newCells = openMultipleCells(newCells, rowParam - 1, colParam - 1, MAX_COLS, MAX_ROWS);
         } else {
             newCells[rowParam - 1][colParam - 1].state = CellState.visible;
         }
@@ -139,7 +144,7 @@ export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: n
 
     if (topCell?.state === CellState.open && topCell.value !== CellValue.bomb) {
         if (topCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam - 1, colParam);
+            newCells = openMultipleCells(newCells, rowParam - 1, colParam, MAX_COLS, MAX_ROWS);
         } else {
             newCells[rowParam - 1][colParam].state = CellState.visible;
         }
@@ -147,7 +152,7 @@ export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: n
 
     if (topRightCell?.state === CellState.open && topRightCell.value !== CellValue.bomb) {
         if (topRightCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam - 1, colParam + 1);
+            newCells = openMultipleCells(newCells, rowParam - 1, colParam + 1, MAX_COLS, MAX_ROWS);
         } else {
             newCells[rowParam - 1][colParam + 1].state = CellState.visible;
         }
@@ -155,7 +160,7 @@ export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: n
 
     if (leftCell?.state === CellState.open && leftCell.value !== CellValue.bomb) {
         if (leftCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam, colParam - 1);
+            newCells = openMultipleCells(newCells, rowParam, colParam - 1, MAX_COLS, MAX_ROWS);
         } else {
             newCells[rowParam][colParam - 1].state = CellState.visible;
         }
@@ -163,7 +168,7 @@ export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: n
 
     if (rightCell?.state === CellState.open && rightCell.value !== CellValue.bomb) {
         if (rightCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam, colParam + 1);
+            newCells = openMultipleCells(newCells, rowParam, colParam + 1, MAX_COLS, MAX_ROWS);
         } else {
             newCells[rowParam][colParam + 1].state = CellState.visible;
         }
@@ -171,7 +176,7 @@ export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: n
 
     if (bottomLeftCell?.state === CellState.open && bottomLeftCell.value !== CellValue.bomb) {
         if (bottomLeftCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam + 1, colParam - 1);
+            newCells = openMultipleCells(newCells, rowParam + 1, colParam - 1, MAX_COLS, MAX_ROWS);
         } else {
             newCells[rowParam + 1][colParam - 1].state = CellState.visible;
         }
@@ -179,7 +184,7 @@ export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: n
 
     if (bottomCell?.state === CellState.open && bottomCell.value !== CellValue.bomb) {
         if (bottomCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam + 1, colParam);
+            newCells = openMultipleCells(newCells, rowParam + 1, colParam, MAX_COLS, MAX_ROWS);
         } else {
             newCells[rowParam + 1][colParam].state = CellState.visible;
         }
@@ -187,7 +192,7 @@ export const openMultipleCells = (cells: Cell[][], rowParam: number, colParam: n
 
     if (bottomRightCell?.state === CellState.open && bottomRightCell.value !== CellValue.bomb) {
         if (bottomRightCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam + 1, colParam + 1);
+            newCells = openMultipleCells(newCells, rowParam + 1, colParam + 1, MAX_COLS, MAX_ROWS);
         } else {
             newCells[rowParam + 1][colParam + 1].state = CellState.visible;
         }
