@@ -12,10 +12,11 @@ interface GameConfigProps {
         MAX_ROWS: number;
         MAX_COLS: number;
         NO_OF_BOMBS: number;
-    }
+    },
+    name: string
 }
 
-const Game: React.FC<GameConfigProps> = ({config}) => {
+const Game: React.FC<GameConfigProps> = ({config, name}) => {
     const {MAX_COLS, MAX_ROWS, NO_OF_BOMBS} = config;
     const [cells, setCells] = useState<Cell[][]>(generateCells(config));
     const [face, setFace] = useState<Face>(Face.smile);
@@ -24,6 +25,15 @@ const Game: React.FC<GameConfigProps> = ({config}) => {
     const [bombCounter, setBombCounter] = useState<number>(NO_OF_BOMBS);
     const [hasLost, setHasLost] = useState<boolean>(false);
     const [hasWon, setHasWon] = useState<boolean>(false);
+    
+    useEffect(() => {
+        setCells(generateCells(config));
+        setTime(0);
+        setLive(false);
+        setBombCounter(config.NO_OF_BOMBS);
+        setHasLost(false);
+        setHasWon(false);
+    }, [config])
 
     useEffect(() => {
         const handleMouseDown = (): void => {

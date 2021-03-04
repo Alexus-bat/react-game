@@ -1,7 +1,6 @@
 import React from 'react';
 import {Switch, Route, Redirect} from 'react-router-dom'
 import { GAME_CONFIG } from '../../constants';
-import { AuthPage } from './AuthPage';
 import Game from './Game';
 import { ScorePage } from './ScorePage';
 
@@ -10,27 +9,19 @@ export const useRoutes = (isAuthenticated: boolean) => {
         return (
             <Switch>
                 <Route path="/game/easy" exact>
-                    <Game config={GAME_CONFIG.easy} />
+                    <Game config={GAME_CONFIG.easy} name="easy" />
                 </Route>
                 <Route path="/game/medium" exact>
-                    <Game config={GAME_CONFIG.medium} />
+                    <Game config={GAME_CONFIG.medium} name="medium" />
                 </Route>
                 <Route path="/game/hard" exact>
-                    <Game config={GAME_CONFIG.hard} />
+                    <Game config={GAME_CONFIG.hard} name="hard" />
                 </Route>
                 <Route path="/score" exact>
                     <ScorePage />
                 </Route>
+                <Redirect to="/game/easy"></Redirect>
             </Switch>
         )
     }
-    
-    return (
-        <Switch>
-            <Route path="/" exact>
-                <AuthPage />
-            </Route>
-            <Redirect to="/" />
-        </Switch>
-    )
 }
