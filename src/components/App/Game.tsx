@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import useSound from 'use-sound';
 
 import NumberDisplay from '../NumberDisplay/NumberDisplay';
 import {generateCells, openMultipleCells} from '../../utils/index'
@@ -7,6 +8,13 @@ import {Cell, CellState, CellValue, Face} from '../../types/index';
 
 import './App.scss';
 import { delStorage, getStorage, setStorage } from '../../utils/storage';
+import { GAME_CONFIG } from '../../constants';
+
+const clickUrl = require('../../assets/sound/click.mp3');
+const lostUrl = require('../../assets/sound/lost.mp3');
+const winUrl = require('../../assets/sound/win.mp3');
+
+
 
 interface GameConfigProps {
     config: {
@@ -17,36 +25,29 @@ interface GameConfigProps {
     name: string
 }
 
-const Game: React.FC<GameConfigProps> = ({config, name}) => {
-    const {MAX_COLS, MAX_ROWS, NO_OF_BOMBS} = config;
-    const [cells, setCells] = useState<Cell[][]>(generateCells(config));
+const Game: React.FC = () => {
+    const [clickSound] = useSound(clickUrl);
+    const [lostSound] = useSound(lostUrl);
+    const [winSound] = useSound(winUrl);
+    const [config, setConfig] = useState(getStorage('config') || GAME_CONFIG.easy)
+    const [key, setKey] = useState<string>(getStorage('key') || 'easy')
+    const [cells, setCells] = useState<Cell[][]>(getStorage('cells') || generateCells(config));
     const [face, setFace] = useState<Face>(Face.smile);
-    const [time, setTime] = useState<number>(0);
+    const [time, setTime] = useState<number>(getStorage('time') || 0);
     const [live, setLive] = useState<boolean>(false);
-    const [bombCounter, setBombCounter] = useState<number>(NO_OF_BOMBS);
+    const [bombCounter, setBombCounter] = useState<number>(getStorage('bomb') || config.NO_OF_BOMBS);
     const [hasLost, setHasLost] = useState<boolean>(false);
     const [hasWon, setHasWon] = useState<boolean>(false);
 
-    // useEffect(() => {
-    //     delStorage('cells')
-    // }, [key])
-
     useEffect(() => {
-        setCells(generateCells(config));
-        setTime(0);
-        setLive(false);
-        setBombCounter(config.NO_OF_BOMBS);
-        setHasLost(false);
-        setHasWon(false);
-    }, [config])
-
-    // useEffect(() => {
-    //     if (!live) {
-    //         delStorage('cells');
-    //         console.log('qu')
-    //     }
-    // }, [live])
-
+        if (live) {
+            setStorage('cells', cells);
+            setStorage('key', key);
+            setStorage('time', time);
+            setStorage('bomb', bombCounter);
+            setStorage('config', config)
+        }
+    }, [time, cells, bombCounter])
 
     useEffect(() => {
         const handleMouseDown = (): void => {
@@ -80,28 +81,27 @@ const Game: React.FC<GameConfigProps> = ({config, name}) => {
 
     useEffect(() => {
         if (hasLost) {
+            lostSound();
             setLive(false);
             setFace(Face.lost);
+            delStorage('cells');
+            delStorage('time');
+            delStorage('bomb');
+            delStorage('config');
+            delStorage('key');
         }
     }, [hasLost]);
 
     useEffect(() => {
         if (hasWon) {
+            winSound();
             setLive(false);
             setFace(Face.won);
         }
     }, [hasWon]);
 
-    useEffect(() => {
-        // console.log('change')
-        if (live) {
-            setStorage('cells', cells);
-            setStorage('time', time);
-            setStorage('name', name);
-        }
-    }, [time, cells])
-
     const handleCellClick = (rowParam: number, colParam: number) => (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+        clickSound();
         e.preventDefault();
 
         if (hasLost) return;
@@ -135,15 +135,15 @@ const Game: React.FC<GameConfigProps> = ({config, name}) => {
             setCells(newCells);
             return;
         } else if (currentCell.value === CellValue.none) {
-            newCells = openMultipleCells(newCells, rowParam, colParam, MAX_COLS, MAX_ROWS);
+            newCells = openMultipleCells(newCells, rowParam, colParam, config.MAX_COLS, config.MAX_ROWS);
         } else {
             newCells[rowParam][colParam].state = CellState.visible;
         }
 
         // check to see if you won
         let safeOpenCellsExists = false;
-        for (let row = 0; row < MAX_ROWS; row++) {
-            for (let col =0; col < MAX_COLS; col++) {
+        for (let row = 0; row < config.MAX_ROWS; row++) {
+            for (let col =0; col < config.MAX_COLS; col++) {
                 const currentCell = newCells[row][col];
 
                 if (currentCell.value !== CellValue.bomb && currentCell.state === CellState.open) {
@@ -176,6 +176,8 @@ const Game: React.FC<GameConfigProps> = ({config, name}) => {
             return;
         }
 
+        clickSound();
+
         const currentCells = cells.slice();
         const currentCell = cells[rowParam][colParam]
 
@@ -193,12 +195,13 @@ const Game: React.FC<GameConfigProps> = ({config, name}) => {
     }
 
     const handleFaceClick = (): void => {
+        clickSound()
         setLive(false);
         setTime(0);
         setCells(generateCells(config));
         setHasLost(false);
         setHasWon(false);
-        setBombCounter(NO_OF_BOMBS);
+        setBombCounter(config.NO_OF_BOMBS);
     }
 
     const renderCells = (): React.ReactNode => {
@@ -230,6 +233,32 @@ const Game: React.FC<GameConfigProps> = ({config, name}) => {
         }))
     }
 
+    const changeLevel = (key: string): void => {
+        clickSound();
+        setLive(false);
+        setTime(0);
+        delStorage('cells');
+        delStorage('time');
+        delStorage('bomb');
+        switch (key) {
+            case 'easy': setConfig(GAME_CONFIG.easy);
+                        setCells(generateCells(GAME_CONFIG.easy));
+                        setBombCounter(GAME_CONFIG.easy.NO_OF_BOMBS);
+                        setKey('easy');
+                        break;
+            case 'medium': setConfig(GAME_CONFIG.medium);
+                        setCells(generateCells(GAME_CONFIG.medium));
+                        setBombCounter(GAME_CONFIG.medium.NO_OF_BOMBS)
+                        setKey('medium');
+                        break;
+            case 'hard': setConfig(GAME_CONFIG.hard);
+                        setCells(generateCells(GAME_CONFIG.hard));
+                        setBombCounter(GAME_CONFIG.hard.NO_OF_BOMBS)
+                        setKey('hard');
+                        break;
+        }
+    }
+
     return (
         <div className="App">
             <div className="Header">
@@ -244,10 +273,24 @@ const Game: React.FC<GameConfigProps> = ({config, name}) => {
             <div 
                 className="Body"
                 style={{
-                    gridTemplateColumns: `repeat(${MAX_COLS}, 1fr)`,
-                    gridTemplateRows: `repeat(${MAX_ROWS}, 1fr)`
+                    gridTemplateColumns: `repeat(${config.MAX_COLS}, 1fr)`,
+                    gridTemplateRows: `repeat(${config.MAX_ROWS}, 1fr)`
                     }}>
                 {renderCells()}
+            </div>
+            <div className="App__footer">
+                <div 
+                    className={`btn-lvl ${(key === 'easy') && 'active'}`}
+                    onClick={changeLevel.bind(null, 'easy')}>
+                    легко</div>
+                <div 
+                    className={`btn-lvl ${(key === 'medium') && 'active'}`}
+                    onClick={changeLevel.bind(null, 'medium')}>
+                        средне</div>
+                <div 
+                    className={`btn-lvl ${(key === 'hard') && 'active'}`}
+                    onClick={changeLevel.bind(null, 'hard')}>
+                        сложно</div>
             </div>
         </div>
     )
