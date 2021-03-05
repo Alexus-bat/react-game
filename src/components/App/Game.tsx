@@ -6,6 +6,7 @@ import Button from '../Button/Button';
 import {Cell, CellState, CellValue, Face} from '../../types/index';
 
 import './App.scss';
+import { delStorage, getStorage, setStorage } from '../../utils/storage';
 
 interface GameConfigProps {
     config: {
@@ -25,7 +26,11 @@ const Game: React.FC<GameConfigProps> = ({config, name}) => {
     const [bombCounter, setBombCounter] = useState<number>(NO_OF_BOMBS);
     const [hasLost, setHasLost] = useState<boolean>(false);
     const [hasWon, setHasWon] = useState<boolean>(false);
-    
+
+    // useEffect(() => {
+    //     delStorage('cells')
+    // }, [key])
+
     useEffect(() => {
         setCells(generateCells(config));
         setTime(0);
@@ -34,6 +39,14 @@ const Game: React.FC<GameConfigProps> = ({config, name}) => {
         setHasLost(false);
         setHasWon(false);
     }, [config])
+
+    // useEffect(() => {
+    //     if (!live) {
+    //         delStorage('cells');
+    //         console.log('qu')
+    //     }
+    // }, [live])
+
 
     useEffect(() => {
         const handleMouseDown = (): void => {
@@ -79,7 +92,18 @@ const Game: React.FC<GameConfigProps> = ({config, name}) => {
         }
     }, [hasWon]);
 
-    const handleCellClick = (rowParam: number, colParam: number) => (): void => {
+    useEffect(() => {
+        // console.log('change')
+        if (live) {
+            setStorage('cells', cells);
+            setStorage('time', time);
+            setStorage('name', name);
+        }
+    }, [time, cells])
+
+    const handleCellClick = (rowParam: number, colParam: number) => (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+        e.preventDefault();
+
         if (hasLost) return;
         
         let newCells = cells.slice();

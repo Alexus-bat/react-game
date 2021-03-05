@@ -1,12 +1,14 @@
 import React from 'react';
 import {Switch, Route, Redirect} from 'react-router-dom'
 import { GAME_CONFIG } from '../../constants';
+import Footer from './Footer';
 import Game from './Game';
 import { ScorePage } from './ScorePage';
 
 export const useRoutes = (isAuthenticated: boolean) => {
     if (isAuthenticated) {
         return (
+            <>
             <Switch>
                 <Route path="/game/easy" exact>
                     <Game config={GAME_CONFIG.easy} name="easy" />
@@ -22,6 +24,8 @@ export const useRoutes = (isAuthenticated: boolean) => {
                 </Route>
                 <Redirect to="/game/easy"></Redirect>
             </Switch>
+            <Footer />
+            </>
         )
     }
 }

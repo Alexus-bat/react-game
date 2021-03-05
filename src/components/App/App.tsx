@@ -11,19 +11,19 @@ const App: React.FC = () => {
                     <li>
                         {/* <a href="/game/easy">Легко</a> */}
                         <NavLink to={{pathname: '/game/easy', }}>
-                            Easy
+                            легко
                         </NavLink>
                     </li>
                     <li>
                         {/* <a href="/game/medium">Средне</a> */}
                         <NavLink to="/game/medium">
-                            medium
+                            средне
                         </NavLink>
                     </li>
                     <li>
                         {/* <a href="/game/hard">Сложно</a> */}
                         <NavLink to="/game/hard">
-                            hard
+                            сложно
                         </NavLink>
                     </li>
                 </ul>
