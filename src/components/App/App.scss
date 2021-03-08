@@ -4,6 +4,7 @@
     @include borders(white, #999);
     background: #c2c2c2;
     padding: 16px;
+    position: relative;
 
     &__footer {
         display: flex;
@@ -87,6 +88,17 @@
     }
 }
 
-.ModalSCore {
-    
+.ModalScore {
+    position: absolute;
+    background: #c2c2c2;
+    width: 100%;
+    height: 90%;
+    top: 10%;
+    left: 0;
+    .title {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+        margin-left: 1rem;
+    }
 }

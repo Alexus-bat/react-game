@@ -30,6 +30,21 @@ interface scoreInterface {
     }
 }
 
+const defScore: scoreInterface = {
+    easy: {
+        countWin: 0,
+        bestTime: null
+    },
+    medium: {
+        countWin: 0,
+        bestTime: null
+    },
+    hard: {
+        countWin: 0,
+        bestTime: null
+    }
+}
+
 const Game: React.FC = () => {
     const [clickSound] = useSound(clickUrl);
     const [lostSound] = useSound(lostUrl);
@@ -45,21 +60,8 @@ const Game: React.FC = () => {
     const [hasWon, setHasWon] = useState<boolean>(false);
     const [showWinTitle, setShowWinTitle] = useState<boolean>(false);
     const [showLostTitle, setShowLostTitle] = useState<boolean>(false);
-    const [showScore, setShowScore] = useState<boolean>(true);
-    const [score, setScore] = useState<scoreInterface>(getStorage('score') || {
-        easy: {
-            countWin: 0,
-            bestTime: null
-        },
-        medium: {
-            countWin: 0,
-            bestTime: null
-        },
-        hard: {
-            countWin: 0,
-            bestTime: null
-        }
-    })
+    const [showScore, setShowScore] = useState<boolean>(false);
+    const [score, setScore] = useState<scoreInterface>(getStorage('score') || defScore);
 
     useEffect(() => {
         if (live) {
@@ -123,8 +125,27 @@ const Game: React.FC = () => {
             setFace(Face.won);
             if (key === 'easy') {
                 score.easy.countWin++;
+                if (!score.easy.bestTime || time < score.easy.bestTime) {
+                    score.easy.bestTime = time;
+                }
                 setScore(score);
-                setStorage('score', JSON.stringify(score));
+                setStorage('score', score);
+            }
+            if (key === 'medium') {
+                score.medium.countWin++;
+                if (!score.medium.bestTime || time < score.medium.bestTime) {
+                    score.medium.bestTime = time;
+                }
+                setScore(score);
+                setStorage('score', score);
+            }
+            if (key === 'hard') {
+                score.hard.countWin++;
+                if (!score.hard.bestTime || time < score.hard.bestTime) {
+                    score.hard.bestTime = time;
+                }
+                setScore(score);
+                setStorage('score', score);
             }
         }
     }, [hasWon]);

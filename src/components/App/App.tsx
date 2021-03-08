@@ -1,5 +1,4 @@
 import React from 'react';
-import {NavLink} from 'react-router-dom';
 import Game from './Game';
 import Footer from './Footer';
 // import { useRoutes } from './useRoutes';
