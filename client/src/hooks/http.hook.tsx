@@ -28,5 +28,5 @@ export const useHttp = () => {
 
     const clearError = (): void => setError(null);
 
-    return { loading, request, clearError }
+    return { loading, request, error, clearError }
 }

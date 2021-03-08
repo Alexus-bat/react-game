@@ -1,0 +1,6 @@
+{
+    "port": 8000,
+    "jwtSecret": "alexus",
+    "mongoUri": "mongodb+srv://alexus:Asd123@cluster0.omygq.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    "baseUri": "http://localhost:8000"
+}
