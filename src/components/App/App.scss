@@ -22,6 +22,20 @@
             color: white;
         }
     }
+
+    .win-title, .lost-title {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .btn {
+        @include borders;
+        cursor: pointer;
+        margin-bottom: .3rem;
+        outline: none;
+    }
 }
 
 .Header {
@@ -73,5 +87,6 @@
     }
 }
 
-  
-
+.ModalSCore {
+    
+}

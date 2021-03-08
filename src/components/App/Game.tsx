@@ -9,20 +9,25 @@ import {Cell, CellState, CellValue, Face} from '../../types/index';
 import './App.scss';
 import { delStorage, getStorage, setStorage } from '../../utils/storage';
 import { GAME_CONFIG } from '../../constants';
+import ModalSCore from './ModalScore';
 
 const clickUrl = require('../../assets/sound/click.mp3');
 const lostUrl = require('../../assets/sound/lost.mp3');
 const winUrl = require('../../assets/sound/win.mp3');
 
-
-
-interface GameConfigProps {
-    config: {
-        MAX_ROWS: number;
-        MAX_COLS: number;
-        NO_OF_BOMBS: number;
+interface scoreInterface {
+    easy: {
+        countWin: number,
+        bestTime: number | null
     },
-    name: string
+    medium: {
+        countWin: number,
+        bestTime: number | null
+    },
+    hard: {
+        countWin: number,
+        bestTime: number | null
+    }
 }
 
 const Game: React.FC = () => {
@@ -38,6 +43,23 @@ const Game: React.FC = () => {
     const [bombCounter, setBombCounter] = useState<number>(getStorage('bomb') || config.NO_OF_BOMBS);
     const [hasLost, setHasLost] = useState<boolean>(false);
     const [hasWon, setHasWon] = useState<boolean>(false);
+    const [showWinTitle, setShowWinTitle] = useState<boolean>(false);
+    const [showLostTitle, setShowLostTitle] = useState<boolean>(false);
+    const [showScore, setShowScore] = useState<boolean>(true);
+    const [score, setScore] = useState<scoreInterface>(getStorage('score') || {
+        easy: {
+            countWin: 0,
+            bestTime: null
+        },
+        medium: {
+            countWin: 0,
+            bestTime: null
+        },
+        hard: {
+            countWin: 0,
+            bestTime: null
+        }
+    })
 
     useEffect(() => {
         if (live) {
@@ -81,6 +103,7 @@ const Game: React.FC = () => {
 
     useEffect(() => {
         if (hasLost) {
+            setShowLostTitle(true);
             lostSound();
             setLive(false);
             setFace(Face.lost);
@@ -94,9 +117,15 @@ const Game: React.FC = () => {
 
     useEffect(() => {
         if (hasWon) {
+            setShowWinTitle(true);
             winSound();
             setLive(false);
             setFace(Face.won);
+            if (key === 'easy') {
+                score.easy.countWin++;
+                setScore(score);
+                setStorage('score', JSON.stringify(score));
+            }
         }
     }, [hasWon]);
 
@@ -195,6 +224,8 @@ const Game: React.FC = () => {
     }
 
     const handleFaceClick = (): void => {
+        setShowLostTitle(false);
+        setShowWinTitle(false);
         clickSound()
         setLive(false);
         setTime(0);
@@ -233,7 +264,9 @@ const Game: React.FC = () => {
         }))
     }
 
-    const changeLevel = (key: string): void => {
+    const changeLevel = (key: string): void => {        
+        setShowLostTitle(false);
+        setShowWinTitle(false);
         clickSound();
         setLive(false);
         setTime(0);
@@ -261,6 +294,14 @@ const Game: React.FC = () => {
 
     return (
         <div className="App">
+            <button 
+            className="btn"
+            onClick={() => {
+                setShowScore(!showScore);
+            }}>
+                Статистика
+            </button>
+            {showScore && <ModalSCore score={score} />}
             <div className="Header">
                 <NumberDisplay value={bombCounter} />
                 <div className="Face" onClick={handleFaceClick}>
@@ -292,6 +333,14 @@ const Game: React.FC = () => {
                     onClick={changeLevel.bind(null, 'hard')}>
                         сложно</div>
             </div>
+            {showWinTitle && (<div className="win-title">
+                <span>Win!!!</span>
+                <span>Click on Face to play more</span>
+            </div>)}
+            {showLostTitle && (<div className="lost-title">
+                <span>Loss((</span>
+                <span>Click on Face to try again</span>
+            </div>)}
         </div>
     )
 };
